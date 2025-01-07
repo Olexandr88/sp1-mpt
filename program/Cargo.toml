@@ -1,0 +1,14 @@
+[package]
+version = "0.1.0"
+name = "mpt-verifier-program"
+edition = "2021"
+
+[dependencies]
+sp1-zkvm = "3.0.0-rc4"
+serde.workspace = true
+bincode.workspace = true
+mpt-verify-lib = { path = "../lib" }
+
+[patch.crates-io]
+# Precompile patches
+tiny-keccak = { git = "https://github.com/sp1-patches/tiny-keccak", tag = "tiny_keccak-v2.0.2-patch-v1" }
