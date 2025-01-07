@@ -40,6 +40,7 @@ pub fn split_eip_1186_account_proof(
     (entry, account_proof.account_proof)
 }
 
+/// This is used to generate a MultiProof for a list of account proofs.
 pub fn prove(mut leaves: Vec<(TrieEntry, TrieBranch)>) -> (Vec<TrieEntry>, TrieMultiProof) {
     leaves.sort_by_key(|(entry, _)| entry.key);
     let (entries, branches): (Vec<_>, Vec<_>) = leaves.into_iter().unzip();
@@ -61,6 +62,7 @@ pub fn prove(mut leaves: Vec<(TrieEntry, TrieBranch)>) -> (Vec<TrieEntry>, TrieM
     (entries, TrieMultiProof { branches })
 }
 
+/// Actual MPT verification function that verifies the deduplicated nodes.
 pub fn verify(root: B256, leaves: &[TrieEntry], proof: TrieMultiProof) -> Result<()> {
     if proof.branches.len() != leaves.len() {
         return Err(eyre::eyre!(
@@ -72,7 +74,7 @@ pub fn verify(root: B256, leaves: &[TrieEntry], proof: TrieMultiProof) -> Result
     for (leaf, branch) in iter::zip(leaves, &proof.branches) {
         verify_proof_stateful(
             root,
-            Nibbles::unpack(&leaf.key),
+            Nibbles::unpack(leaf.key),
             Some(leaf.value.clone()),
             branch,
             &mut stack,

@@ -1,22 +1,13 @@
-//! A simple program that takes a number `n` as input, and writes the `n-1`th and `n`th fibonacci
-//! number as an output.
+//! A SP1 program that verifies the MPT MultiProof for given list of accounts that are part of a
+//! single state trie.
 
-// These two lines are necessary for the program to properly compile.
-//
-// Under the hood, we wrap your main function with some extra code so that it behaves properly
-// inside the zkVM.
 #![no_main]
 sp1_zkvm::entrypoint!(main);
 
 use mpt_verify_lib::{verify, ProgramInput, PublicValuesStruct};
-use serde::Serialize;
-// use fibonacci_lib::{fibonacci, PublicValuesStruct};
 
 pub fn main() {
     // Read an input to the program.
-    //
-    // Behind the scenes, this compiles down to a custom system call which handles reading inputs
-    // from the prover.
     let input = sp1_zkvm::io::read_vec();
     let input = bincode::deserialize::<ProgramInput>(&input).unwrap();
     let ProgramInput {
@@ -25,9 +16,8 @@ pub fn main() {
         proof,
     } = input;
 
-    verify(state_trie_root.clone(), &leaves, proof).unwrap();
-    // Compute the n'th fibonacci number using a function from the workspace lib crate.
-    // let (a, b) = fibonacci(n);
+    verify(state_trie_root, &leaves, proof).unwrap();
+
     let public_values = PublicValuesStruct {
         state_trie_root,
         leaves,
