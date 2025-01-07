@@ -1,7 +1,6 @@
-# SP1 Project Template
+# SP1 MPT Prover
 
-This is a template for creating an end-to-end [SP1](https://github.com/succinctlabs/sp1) project
-that can generate a proof of any RISC-V program.
+MPT account inclusion verifier written on top of [SP1](https://github.com/succinctlabs/sp1).
 
 ## Requirements
 
@@ -10,83 +9,45 @@ that can generate a proof of any RISC-V program.
 
 ## Running the Project
 
-There are four main ways to run this project: build a program, execute a program, generate a core proof, and
-generate an EVM-compatible proof.
-
-### Build the Program
-
-To build the program, run the following command:
-
-```sh
-cd program
-cargo prove build
-```
+The included SP1 script program executes with the given input as well as prove (optionally compress)
+and verify the MPT account inclusion program for your given input
 
 ### Execute the Program
 
-To run the program without generating a proof:
-
+We recommend using Rust native compilation for increased performance, simply set the environment variable
 ```sh
-cd script
-cargo run --release -- --execute
+export RUSTFLAGS="-C target-cpu=native"
 ```
 
-This will execute the program and display the output.
-
-### Generate a Core Proof
-
-To generate a core proof for your program:
+To run the program on a given set of account proofs
 
 ```sh
-cd script
-cargo run --release -- --prove
+cargo run --release --bin mpt-prover -- --verification-info <MPT_ACCOUNTS_JSON_FILE> --state-trie-root <STATE_ROOT_TRIE>
 ```
 
-### Generate an EVM-Compatible Proof
+This will execute the program and create three output files which contain serialized proof with
+public values, proof without public values as well as the input to the SP1 program. 
 
+By default we are using log level `info`, to get more verbose or less verbose input change `RUST_LOG=`
+environment variable accordingly
+
+We have included an example input json file `mainnet_21367805.json` which includes all the account proofs for
+the block `21367805` that has the state trie root `0x1aa2e84e4e7b3c6d578a1ea46af8672ca64fdd908288332f8048bca13047d033`.
 > [!WARNING]
-> You will need at least 128GB RAM to generate a Groth16 or PLONK proof.
+> This can take upto 30 minutes to run depending on the device you are running. You may truncate this list to run in a managable time.
 
-To generate a proof that is small enough to be verified on-chain and verifiable by the EVM:
+### Compress Proofs
+
+Optionally you can compress the proofs for smaller proof sizes but longer proving time.
 
 ```sh
-cd script
-cargo run --release --bin evm -- --system groth16
+cargo run --release --bin mpt-prover -- --compress --verification-info <MPT_ACCOUNTS_JSON_FILE> --state-trie-root <STATE_ROOT_TRIE>
 ```
 
-this will generate a Groth16 proof. If you want to generate a PLONK proof, run the following command:
+### GPU Acceleration
+SP1 has [Cuda](https://developer.nvidia.com/cuda-toolkit) support and you can accelerate on GPU
+to improve proving time, use the following feature to use Cuda prover
 
 ```sh
-cargo run --release --bin evm -- --system plonk
-```
-
-These commands will also generate fixtures that can be used to test the verification of SP1 zkVM proofs
-inside Solidity.
-
-### Retrieve the Verification Key
-
-To retrieve your `programVKey` for your on-chain contract, run the following command:
-
-```sh
-cargo prove vkey --program fibonacci-program
-```
-
-## Using the Prover Network
-
-We highly recommend using the Succinct prover network for any non-trivial programs or benchmarking purposes. For more information, see the [setup guide](https://docs.succinct.xyz/generating-proofs/prover-network.html).
-
-To get started, copy the example environment file:
-
-```sh
-cp .env.example .env
-```
-
-Then, set the `SP1_PROVER` environment variable to `network` and set the `SP1_PRIVATE_KEY`
-environment variable to your whitelisted private key.
-
-For example, to generate an EVM-compatible proof using the prover network, run the following
-command:
-
-```sh
-SP1_PROVER=network SP1_PRIVATE_KEY=... cargo run --release --bin evm
+cargo run --release --bin mpt-prover --features cuda -- --compress --verification-info <MPT_ACCOUNTS_JSON_FILE> --state-trie-root <STATE_ROOT_TRIE>
 ```

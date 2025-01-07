@@ -1,5 +1,6 @@
 //! An end-to-end example of using the SP1 SDK to generate a proof of a program that can be executed
-//! or have a core proof generated.
+//! and have a core proof generated. This script parses the EIP-1186 account proofs and generates a
+//! MultiProof for the mpt-verifier program to verify the account proofs.
 //!
 //! You can run this script using the following command:
 //! ```shell
@@ -30,11 +31,11 @@ struct Args {
     state_trie_root: String,
 
     #[clap(long, default_value = "false")]
+    // Whether to compress the proof or not.
     compress: bool,
 
     #[clap(long)]
     verification_info: PathBuf,
-    // TODO: Does it need report_path?
 }
 
 fn main() {
@@ -53,12 +54,15 @@ fn main() {
     let trie_entries_and_branches = verification_info
         .0
         .into_iter()
-        .map(|info| split_eip_1186_account_proof(info))
+        .map(split_eip_1186_account_proof)
         .collect::<Vec<(TrieEntry, TrieBranch)>>();
     let (entries, multi_proof) = prove(trie_entries_and_branches);
     println!("Proving mpt-verifier on {} accounts...", entries.len());
 
-    println!("Witness data is {} bytes", bincode::serialized_size(&multi_proof).unwrap());
+    println!(
+        "Witness data is {} bytes",
+        bincode::serialized_size(&multi_proof).unwrap()
+    );
 
     let input = ProgramInput {
         state_trie_root: args.state_trie_root.parse().unwrap(),
@@ -81,7 +85,7 @@ fn main() {
     println!("Program executed successfully.");
 
     // Read the output.
-    let decoded = bincode::deserialize::<PublicValuesStruct>(&output.as_slice()).unwrap();
+    let decoded = bincode::deserialize::<PublicValuesStruct>(output.as_slice()).unwrap();
 
     assert!(decoded.success);
 
