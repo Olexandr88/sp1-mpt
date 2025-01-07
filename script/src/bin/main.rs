@@ -58,6 +58,8 @@ fn main() {
     let (entries, multi_proof) = prove(trie_entries_and_branches);
     println!("Proving mpt-verifier on {} accounts...", entries.len());
 
+    println!("Witness data is {} bytes", bincode::serialized_size(&multi_proof).unwrap());
+
     let input = ProgramInput {
         state_trie_root: args.state_trie_root.parse().unwrap(),
         leaves: entries,
