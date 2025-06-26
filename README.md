@@ -5,7 +5,7 @@ MPT account inclusion verifier written on top of [SP1](https://github.com/succin
 ## Requirements
 
 - [Rust](https://rustup.rs/)
-- [SP1](https://docs.succinct.xyz/getting-started/install.html)
+- [SP1](https://docs.succinct.xyz/docs/sp1/getting-started/install)
 
 ## Running the Project
 
